@@ -1,5 +1,5 @@
 {
-  "Home": false,
-  "Panel": false,
-  "Carta": false
+  "Home": true,
+  "Panel": true,
+  "Carta": true
 }
