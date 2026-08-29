@@ -22,9 +22,9 @@ jobs:
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
-              FTP_HOST: ${{ secrets.FTP_HOST }}
-    FTP_USER: ${{ secrets.FTP_USER }}
-    FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
         run: python monitor.py
 
       - name: Commit state if changed
