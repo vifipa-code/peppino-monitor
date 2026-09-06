@@ -1,5 +1,17 @@
 {
-  "Home": false,
-  "Panel": false,
-  "Carta": false
+  "Home": {
+    "ok": true,
+    "since": null,
+    "last_alert": null
+  },
+  "Panel": {
+    "ok": true,
+    "since": null,
+    "last_alert": null
+  },
+  "Carta": {
+    "ok": true,
+    "since": null,
+    "last_alert": null
+  }
 }
