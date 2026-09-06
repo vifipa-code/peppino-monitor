@@ -9,6 +9,7 @@ import os
 import io
 import ssl
 import ftplib
+import html
 import urllib.request
 import urllib.parse
 from datetime import datetime, timezone
@@ -121,9 +122,9 @@ print('index.php:', msg)
 if healthy is False:
     ok = repair_index_php()
     if ok:
-        tg('AUTO-REPARADO: <b>index.php</b>\n' + msg + '\nRestaurado.\n' + now)
+        tg('AUTO-REPARADO: <b>index.php</b>\n' + html.escape(msg) + '\nRestaurado.\n' + now)
     else:
-        tg('FALLO al reparar index.php\n' + msg + '\n' + now)
+        tg('FALLO al reparar index.php\n' + html.escape(msg) + '\n' + now)
 
 # 2) HTTP checks
 for name, url, ms in CHECKS:
@@ -132,9 +133,9 @@ for name, url, ms in CHECKS:
     print(name, '->', 'OK' if ok else 'FAIL', '|', msg)
     was_ok = prev.get(name, True)
     if not ok and was_ok:
-        tg('CAIDA: <b>' + name + '</b>\n' + url + '\n' + msg + '\n' + now)
+        tg('CAIDA: <b>' + html.escape(name) + '</b>\n' + html.escape(url) + '\n' + html.escape(msg) + '\n' + now)
     elif ok and not was_ok:
-        tg('RECUPERADO: <b>' + name + '</b>\n' + msg + '\n' + now)
+        tg('RECUPERADO: <b>' + html.escape(name) + '</b>\n' + html.escape(msg) + '\n' + now)
 
 with open(STATE_FILE, 'w', encoding='utf-8') as f:
     json.dump(new, f, indent=2)
