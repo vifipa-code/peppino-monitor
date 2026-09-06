@@ -107,14 +107,25 @@ def repair_index_php():
 
 
 # --- run ---
+REMINDER_MIN = 15  # re-avisa cada 15 min mientras siga caido
+
 try:
     with open(STATE_FILE, 'r', encoding='utf-8') as f:
-        prev = json.load(f)
+        prev_raw = json.load(f)
 except Exception:
-    prev = {}
+    prev_raw = {}
 
-now = datetime.now(timezone.utc).strftime('%d/%m %H:%M UTC')
-new = dict(prev)
+# Backwards compat: old format was {"Home": true, ...}
+def norm(v):
+    if isinstance(v, bool):
+        return {'ok': v, 'since': None, 'last_alert': None}
+    return {'ok': v.get('ok', True), 'since': v.get('since'), 'last_alert': v.get('last_alert')}
+
+prev = {k: norm(v) for k, v in prev_raw.items()}
+
+now_dt = datetime.now(timezone.utc)
+now = now_dt.strftime('%d/%m %H:%M UTC')
+new = {}
 
 # 1) Auto-repair index.php if broken
 healthy, msg = index_php_is_healthy()
@@ -129,13 +140,43 @@ if healthy is False:
 # 2) HTTP checks
 for name, url, ms in CHECKS:
     ok, msg = check(url, ms)
-    new[name] = ok
     print(name, '->', 'OK' if ok else 'FAIL', '|', msg)
-    was_ok = prev.get(name, True)
-    if not ok and was_ok:
+    p = prev.get(name, {'ok': True, 'since': None, 'last_alert': None})
+    entry = {'ok': ok, 'since': p['since'], 'last_alert': p['last_alert']}
+
+    if not ok and p['ok']:
+        # Just went down
+        entry['since'] = now_dt.isoformat()
+        entry['last_alert'] = now_dt.isoformat()
         tg('CAIDA: <b>' + html.escape(name) + '</b>\n' + html.escape(url) + '\n' + html.escape(msg) + '\n' + now)
-    elif ok and not was_ok:
-        tg('RECUPERADO: <b>' + html.escape(name) + '</b>\n' + html.escape(msg) + '\n' + now)
+    elif not ok and not p['ok']:
+        # Still down: re-alert every REMINDER_MIN
+        last_alert = p['last_alert']
+        try:
+            la = datetime.fromisoformat(last_alert) if last_alert else None
+        except Exception:
+            la = None
+        should_alert = (la is None) or ((now_dt - la).total_seconds() >= REMINDER_MIN * 60)
+        if should_alert:
+            try:
+                since_dt = datetime.fromisoformat(p['since']) if p['since'] else now_dt
+                mins = int((now_dt - since_dt).total_seconds() // 60)
+            except Exception:
+                mins = 0
+            entry['last_alert'] = now_dt.isoformat()
+            tg('SIGUE CAIDA (' + str(mins) + ' min): <b>' + html.escape(name) + '</b>\n' + html.escape(url) + '\n' + html.escape(msg) + '\n' + now)
+    elif ok and not p['ok']:
+        # Recovered
+        try:
+            since_dt = datetime.fromisoformat(p['since']) if p['since'] else now_dt
+            mins = int((now_dt - since_dt).total_seconds() // 60)
+        except Exception:
+            mins = 0
+        entry['since'] = None
+        entry['last_alert'] = None
+        tg('RECUPERADO: <b>' + html.escape(name) + '</b>\nEstuvo caida ' + str(mins) + ' min\n' + html.escape(msg) + '\n' + now)
+
+    new[name] = entry
 
 with open(STATE_FILE, 'w', encoding='utf-8') as f:
     json.dump(new, f, indent=2)
