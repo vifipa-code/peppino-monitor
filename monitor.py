@@ -12,7 +12,7 @@ import ftplib
 import html
 import urllib.request
 import urllib.parse
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 TOKEN = os.environ['TG_TOKEN']
 CHAT_ID = os.environ['TG_CHAT']
@@ -124,7 +124,9 @@ def norm(v):
 prev = {k: norm(v) for k, v in prev_raw.items()}
 
 now_dt = datetime.now(timezone.utc)
-now = now_dt.strftime('%d/%m %H:%M UTC')
+# Show Madrid time (roughly UTC+2 in summer, UTC+1 in winter)
+_madrid = timezone(timedelta(hours=2))  # España horario verano
+now = now_dt.astimezone(_madrid).strftime('%d/%m %H:%M h')
 new = {}
 
 # 1) Auto-repair index.php if broken
