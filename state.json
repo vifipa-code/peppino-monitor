@@ -1,17 +1,17 @@
 {
   "Home": {
-    "ok": true,
-    "since": null,
-    "last_alert": null
+    "ok": false,
+    "since": "2026-09-12T18:17:45.729585+00:00",
+    "last_alert": "2026-09-12T18:17:45.729585+00:00"
   },
   "Panel": {
-    "ok": true,
-    "since": null,
-    "last_alert": null
+    "ok": false,
+    "since": "2026-09-12T18:17:45.729585+00:00",
+    "last_alert": "2026-09-12T18:17:45.729585+00:00"
   },
   "Carta": {
-    "ok": true,
-    "since": null,
-    "last_alert": null
+    "ok": false,
+    "since": "2026-09-12T18:17:45.729585+00:00",
+    "last_alert": "2026-09-12T18:17:45.729585+00:00"
   }
 }
